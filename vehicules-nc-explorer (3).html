@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Véhicules NC — Explorateur</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0c10; --surface: #11141a; --surface2: #181c25; --border: #232834;
+    --accent: #00e5ff; --accent2: #ff6b35; --text: #e8eaf0; --muted: #5a6278;
+    --success: #00e5a0; --mono: 'Space Mono', monospace; --sans: 'Syne', sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--sans); min-height: 100vh; overflow-x: hidden; }
+  body::before {
+    content: ''; position: fixed; inset: 0;
+    background-image: linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px; pointer-events: none; z-index: 0;
+  }
+  .container { position: relative; z-index: 1; max-width: 1300px; margin: 0 auto; padding: 0 24px; }
+  header { border-bottom: 1px solid var(--border); padding: 28px 0; margin-bottom: 36px; }
+  .header-inner { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .logo-tag { font-family: var(--mono); font-size: 10px; color: var(--accent); background: rgba(0,229,255,0.08); border: 1px solid rgba(0,229,255,0.2); padding: 3px 8px; border-radius: 3px; letter-spacing: 0.1em; text-transform: uppercase; }
+  h1 { font-size: 26px; font-weight: 800; letter-spacing: -0.02em; }
+  h1 span { color: var(--accent); }
+  .stat-badge { font-family: var(--mono); font-size: 11px; color: var(--muted); border: 1px solid var(--border); padding: 6px 14px; border-radius: 4px; }
+  .stat-badge strong { color: var(--accent2); }
+  .layout { display: grid; grid-template-columns: 320px 1fr; gap: 24px; align-items: start; }
+  .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .panel-header { padding: 14px 18px; border-bottom: 1px solid var(--border); font-size: 11px; font-family: var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: 0.12em; display: flex; align-items: center; gap: 8px; }
+  .panel-header::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 8px var(--accent); }
+  .panel-body { padding: 18px; }
+  .field { margin-bottom: 16px; }
+  label { display: block; font-size: 11px; font-family: var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px; }
+  input, select { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; color: var(--text); font-family: var(--mono); font-size: 13px; padding: 9px 12px; outline: none; transition: border-color 0.2s; appearance: none; }
+  input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(0,229,255,0.1); }
+  select option { background: var(--surface2); }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { font-family: var(--mono); font-size: 11px; padding: 4px 10px; border-radius: 3px; border: 1px solid var(--border); cursor: pointer; transition: all 0.15s; background: transparent; color: var(--muted); }
+  .chip:hover { border-color: var(--accent); color: var(--accent); }
+  .chip.active { background: rgba(0,229,255,0.12); border-color: var(--accent); color: var(--accent); }
+  .chip.go.active { background: rgba(255,200,50,0.1); border-color: #ffc832; color: #ffc832; }
+  .chip.el.active { background: rgba(0,229,160,0.1); border-color: var(--success); color: var(--success); }
+  .chip.eh.active { background: rgba(180,120,255,0.1); border-color: #b478ff; color: #b478ff; }
+  .chip.es.active { background: rgba(255,107,53,0.12); border-color: var(--accent2); color: var(--accent2); }
+  .btn-primary { width: 100%; padding: 12px; background: var(--accent); color: #000; border: none; border-radius: 4px; font-family: var(--mono); font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; cursor: pointer; transition: all 0.2s; margin-top: 6px; }
+  .btn-primary:hover { background: #33ecff; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,229,255,0.25); }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+  .url-box { background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; padding: 10px 12px; font-family: var(--mono); font-size: 10px; color: #b478ff; word-break: break-all; line-height: 1.7; margin-top: 16px; }
+  .url-box .label { color: var(--muted); font-size: 9px; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px; }
+  .sep { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+  .results-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; gap: 12px; }
+  .results-meta { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+  .results-meta strong { color: var(--accent2); }
+  .btn-secondary { padding: 8px 14px; background: transparent; color: var(--muted); border: 1px solid var(--border); border-radius: 4px; font-family: var(--mono); font-size: 11px; cursor: pointer; transition: all 0.15s; }
+  .btn-secondary:hover { border-color: var(--muted); color: var(--text); }
+  .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 8px; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; font-family: var(--mono); }
+  thead th { padding: 10px 14px; text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); background: var(--surface); border-bottom: 1px solid var(--border); white-space: nowrap; }
+  tbody tr { border-bottom: 1px solid rgba(35,40,52,0.6); transition: background 0.1s; }
+  tbody tr:hover { background: rgba(0,229,255,0.04); cursor: pointer; }
+  td { padding: 9px 14px; white-space: nowrap; vertical-align: middle; }
+  td.muted { color: var(--muted); }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
+  .badge-es { background: rgba(255,107,53,0.15); color: var(--accent2); border: 1px solid rgba(255,107,53,0.3); }
+  .badge-go { background: rgba(255,200,50,0.1); color: #ffc832; border: 1px solid rgba(255,200,50,0.3); }
+  .badge-el { background: rgba(0,229,160,0.1); color: var(--success); border: 1px solid rgba(0,229,160,0.3); }
+  .badge-eh { background: rgba(180,120,255,0.1); color: #b478ff; border: 1px solid rgba(180,120,255,0.3); }
+  .badge-default { background: rgba(90,98,120,0.2); color: var(--muted); border: 1px solid var(--border); }
+  .pagination { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 20px; flex-wrap: wrap; }
+  .page-btn { padding: 6px 12px; background: var(--surface); border: 1px solid var(--border); color: var(--muted); font-family: var(--mono); font-size: 11px; border-radius: 4px; cursor: pointer; transition: all 0.15s; }
+  .page-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+  .page-btn.active { background: rgba(0,229,255,0.1); border-color: var(--accent); color: var(--accent); }
+  .page-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+  .page-info { font-family: var(--mono); font-size: 11px; color: var(--muted); padding: 0 8px; }
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(4px); opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+  .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; width: 100%; max-width: 700px; max-height: 85vh; overflow-y: auto; transform: translateY(20px); transition: transform 0.2s; }
+  .modal-overlay.open .modal { transform: translateY(0); }
+  .modal-header { padding: 18px 22px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .modal-header h3 { font-size: 16px; font-weight: 800; }
+  .modal-header h3 span { color: var(--accent); }
+  .modal-close { background: none; border: 1px solid var(--border); color: var(--muted); width: 30px; height: 30px; border-radius: 4px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; }
+  .modal-close:hover { border-color: var(--accent2); color: var(--accent2); }
+  .modal-body { padding: 22px; }
+  .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .detail-item { background: var(--surface2); border: 1px solid var(--border); border-radius: 5px; padding: 10px 13px; }
+  .detail-item .key { font-family: var(--mono); font-size: 9px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); margin-bottom: 4px; }
+  .detail-item .val { font-family: var(--mono); font-size: 13px; color: var(--text); word-break: break-all; }
+  .detail-item .val.hl { color: var(--accent); }
+  .loader { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 60px; font-family: var(--mono); font-size: 12px; color: var(--muted); }
+  .spinner { width: 20px; height: 20px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .empty { padding: 60px; text-align: center; font-family: var(--mono); font-size: 12px; color: var(--muted); }
+  .empty .icon { font-size: 32px; margin-bottom: 12px; }
+  .error-msg { background: rgba(255,80,80,0.08); border: 1px solid rgba(255,80,80,0.2); color: #ff5050; padding: 12px 16px; border-radius: 5px; font-family: var(--mono); font-size: 12px; margin-bottom: 16px; }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } .detail-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="header-inner">
+      <div style="display:flex;align-items:baseline;gap:10px">
+        <span class="logo-tag">data.gouv.nc</span>
+        <h1>Véhicules <span>NC</span></h1>
+      </div>
+      <div class="stat-badge">Total: <strong id="totalCount">—</strong> véhicules</div>
+    </div>
+  </header>
+  <div class="layout">
+    <aside>
+      <div class="panel">
+        <div class="panel-header">Filtres</div>
+        <div class="panel-body">
+          <div class="field"><label>Marque</label><input type="text" id="f_marque" placeholder="ex: TOYOTA, RENAULT…" autocomplete="off"/></div>
+          <div class="field"><label>Modèle</label><input type="text" id="f_modele" placeholder="ex: YARIS, CLIO…" autocomplete="off"/></div>
+          <div class="field"><label>Commune du propriétaire</label><input type="text" id="f_commune" placeholder="ex: NOUMEA, DUMBEA…" autocomplete="off"/></div>
+          <div class="field">
+            <label>Genre</label>
+            <select id="f_genre">
+              <option value="">— Tous —</option>
+              <option value="VP">Voiture particulière</option>
+              <option value="MOTO">Motocyclette</option>
+              <option value="MTL">Motocyclette légère</option>
+              <option value="CYCL">Cyclomoteur</option>
+              <option value="CAM">Camion</option>
+              <option value="CTTE">Camionnette</option>
+              <option value="REM">Remorque</option>
+              <option value="SREM">Semi-remorque</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Énergie</label>
+            <div class="chips">
+              <button class="chip es" data-val="ES" onclick="toggleChip(this,'f_energie')">⛽ Essence</button>
+              <button class="chip go" data-val="GO" onclick="toggleChip(this,'f_energie')">🛢 Diesel</button>
+              <button class="chip el" data-val="EL" onclick="toggleChip(this,'f_energie')">⚡ Électrique</button>
+              <button class="chip eh" data-val="EH" onclick="toggleChip(this,'f_energie')">🔋 Hybride</button>
+            </div>
+            <input type="hidden" id="f_energie" value="">
+          </div>
+          <div class="field">
+            <label>N° immatriculation <small style="color:var(--muted);font-size:9px;text-transform:none">(sans "NC")</small></label>
+            <input type="text" id="f_immat" placeholder="ex: 452017 ou 503 AR" autocomplete="off"/>
+          </div>
+          <div class="field"><label>Couleur</label><input type="text" id="f_couleur" placeholder="ex: NOIR, BLANC…" autocomplete="off"/></div>
+          <hr class="sep">
+          <div class="field">
+            <label>Trier par</label>
+            <select id="f_orderby">
+              <option value="date_emission desc">Date d'émission (récent)</option>
+              <option value="date_emission asc">Date d'émission (ancien)</option>
+              <option value="marque asc">Marque A→Z</option>
+              <option value="puissance_kw desc">Puissance (décroissant)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Résultats par page</label>
+            <select id="f_limit"><option value="20">20</option><option value="50">50</option><option value="100">100</option></select>
+          </div>
+          <button class="btn-primary" id="searchBtn" onclick="search()">▶ Rechercher</button>
+          <div class="url-box" id="urlBox"><div class="label">URL générée</div><span style="color:var(--muted)">En attente…</span></div>
+        </div>
+      </div>
+    </aside>
+    <main>
+      <div id="errorZone"></div>
+      <div id="resultsZone"><div class="empty"><div class="icon">🔍</div>Définissez vos filtres et lancez une recherche</div></div>
+      <div class="pagination" id="paginationZone"></div>
+    </main>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modalTitle">Détail véhicule</h3>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body"><div id="modalContent"></div></div>
+  </div>
+</div>
+
+<script>
+const BASE = 'https://data.gouv.nc/api/explore/v2.1/catalog/datasets/vehicules-immatricules-nc/records';
+let currentOffset = 0, currentTotal = 0, currentLimit = 20;
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+function toggleChip(el, fieldId) {
+  const active = el.classList.contains('active');
+  document.querySelectorAll('.chips .chip').forEach(c => c.classList.remove('active'));
+  document.getElementById(fieldId).value = active ? '' : el.dataset.val;
+  if (!active) el.classList.add('active');
+}
+
+function gval(id) { return document.getElementById(id).value.trim(); }
+
+// ── Build URL ─────────────────────────────────────────────────────────────────
+function buildUrl(offset) {
+  const limit   = parseInt(gval('f_limit'));
+  const orderby = gval('f_orderby');
+
+  const marque  = gval('f_marque').toUpperCase();
+  const modele  = gval('f_modele').toUpperCase();
+  const commune = gval('f_commune').toUpperCase();
+  const genre   = gval('f_genre');
+  const energie = gval('f_energie');
+  const couleur = gval('f_couleur').toUpperCase();
+  // Immat : strip NC final, puis on le rajoute pour la recherche exacte
+  const immat   = gval('f_immat').toUpperCase().replace(/\s*NC\s*$/, '').trim();
+
+  const clauses = [];
+  if (marque)  clauses.push(`marque like "%${marque}%"`);
+  if (modele)  clauses.push(`appellation_commerciale like "%${modele}%"`);
+  if (commune) clauses.push(`commune_proprietaire like "%${commune}%"`);
+  if (genre)   clauses.push(`genre_code="${genre}"`);
+  if (energie) clauses.push(`energie="${energie}"`);
+  if (couleur) clauses.push(`couleur like "%${couleur}%"`);
+  // Pour l'immat on teste les deux formats : avec NC et sans (ex: "503 AR")
+  if (immat)   clauses.push(`(numero_immat="${immat}NC" OR numero_immat="${immat}")`);
+
+  const where = clauses.join(' and ');
+  const parts = [
+    `limit=${limit}`,
+    `offset=${offset}`,
+    `order_by=${encodeURIComponent(orderby)}`
+  ];
+  if (where) parts.push(`where=${encodeURIComponent(where)}`);
+
+  return BASE + '?' + parts.join('&');
+}
+
+function showUrl(url) {
+  const decoded = decodeURIComponent(url);
+  document.getElementById('urlBox').innerHTML = `<div class="label">URL générée</div>${decoded}`;
+}
+
+// ── Fetch direct (CORS doit être ouvert par data.gouv.nc) ────────────────────
+async function search(offset = 0) {
+  currentOffset = offset;
+  currentLimit  = parseInt(gval('f_limit'));
+
+  const url = buildUrl(offset);
+  showUrl(url);
+
+  document.getElementById('searchBtn').disabled = true;
+  document.getElementById('resultsZone').innerHTML = '<div class="loader"><div class="spinner"></div> Chargement…</div>';
+  document.getElementById('paginationZone').innerHTML = '';
+  document.getElementById('errorZone').innerHTML = '';
+
+  try {
+    // data.gouv.nc autorise le CORS (Access-Control-Allow-Origin: *)
+    const resp = await fetch(url, { method: 'GET', headers: { 'Accept': 'application/json' } });
+
+    if (!resp.ok) {
+      const txt = await resp.text();
+      throw new Error(`HTTP ${resp.status} : ${txt.slice(0, 300)}`);
+    }
+
+    const data = await resp.json();
+    currentTotal = data.total_count || 0;
+    document.getElementById('totalCount').textContent = currentTotal.toLocaleString('fr-FR');
+    renderResults(data.results || []);
+    renderPagination();
+
+  } catch (e) {
+    // Si CORS bloqué, proposer de copier l'URL
+    const isCors = e instanceof TypeError && e.message.toLowerCase().includes('fetch');
+    document.getElementById('errorZone').innerHTML = `
+      <div class="error-msg">
+        ❌ ${e.message}
+        ${isCors ? `<br><br>⚠️ Le navigateur bloque la requête (CORS).<br>
+        Copiez l'URL ci-dessous dans un nouvel onglet pour voir le JSON brut :` : ''}
+      </div>`;
+    document.getElementById('resultsZone').innerHTML = '';
+  } finally {
+    document.getElementById('searchBtn').disabled = false;
+  }
+}
+
+// ── Render ────────────────────────────────────────────────────────────────────
+function energieBadge(e) {
+  const map   = { ES:'badge-es', GO:'badge-go', EL:'badge-el', EH:'badge-eh' };
+  const label = { ES:'Essence', GO:'Diesel', EL:'Électrique', EH:'Hybride' };
+  return `<span class="badge ${map[e]||'badge-default'}">${label[e]||e||'—'}</span>`;
+}
+
+function renderResults(results) {
+  if (!results.length) {
+    document.getElementById('resultsZone').innerHTML = '<div class="empty"><div class="icon">🚗</div>Aucun véhicule trouvé.</div>';
+    return;
+  }
+  window._rows = results;
+  const cols  = ['numero_immat','marque','appellation_commerciale','genre','energie','commune_proprietaire','date_emission','puissance_kw'];
+  const heads = ['Immat.','Marque','Modèle','Genre','Énergie','Commune','Date émission','kW'];
+  const shown = currentOffset + results.length;
+
+  let html = `<div class="results-header">
+    <div class="results-meta">Résultats <strong>${currentOffset+1}–${shown}</strong> sur <strong>${currentTotal.toLocaleString('fr-FR')}</strong></div>
+    <button class="btn-secondary" onclick="exportCSV()">↓ CSV</button>
+  </div><div class="table-wrap"><table>
+  <thead><tr>${heads.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>`;
+
+  results.forEach((r, i) => {
+    html += `<tr onclick="showDetail(${i})">`;
+    cols.forEach(c => {
+      if      (c==='energie')       html += `<td>${energieBadge(r[c])}</td>`;
+      else if (c==='date_emission') html += `<td class="muted">${(r[c]||'').slice(0,10)||'—'}</td>`;
+      else if (c==='puissance_kw')  html += `<td class="muted">${r[c]!=null ? r[c]+' kW' : '—'}</td>`;
+      else html += `<td>${r[c] || '<span style="color:var(--muted)">—</span>'}</td>`;
+    });
+    html += '</tr>';
+  });
+  html += '</tbody></table></div>';
+  document.getElementById('resultsZone').innerHTML = html;
+}
+
+function renderPagination() {
+  const totalPages = Math.ceil(currentTotal / currentLimit);
+  const cur = Math.floor(currentOffset / currentLimit) + 1;
+  if (totalPages <= 1) { document.getElementById('paginationZone').innerHTML = ''; return; }
+
+  let html = `<button class="page-btn" onclick="search(${currentOffset - currentLimit})" ${cur===1?'disabled':''}>← Préc.</button>`;
+  const lo = Math.max(1, cur-2), hi = Math.min(totalPages, cur+2);
+  if (lo>1) { html += `<button class="page-btn" onclick="search(0)">1</button>`; if(lo>2) html += '<span class="page-info">…</span>'; }
+  for (let p=lo; p<=hi; p++) html += `<button class="page-btn${p===cur?' active':''}" onclick="search(${(p-1)*currentLimit})">${p}</button>`;
+  if (hi<totalPages) { if(hi<totalPages-1) html += '<span class="page-info">…</span>'; html += `<button class="page-btn" onclick="search(${(totalPages-1)*currentLimit})">${totalPages}</button>`; }
+  html += `<button class="page-btn" onclick="search(${currentOffset + currentLimit})" ${cur===totalPages?'disabled':''}>Suiv. →</button>`;
+  document.getElementById('paginationZone').innerHTML = html;
+}
+
+// ── Detail modal ──────────────────────────────────────────────────────────────
+const LABELS = {
+  numero_immat:'N° immatriculation', marque:'Marque', appellation_commerciale:'Modèle',
+  genre:'Genre', genre_code:'Code genre', energie:'Énergie',
+  commune_proprietaire:'Commune propriétaire', type_societe_proprietaire:'Type société',
+  date_emission:'Date émission', date_1ere_mise_en_circulation:'1ère MEC',
+  date_1ere_mise_en_circulation_nc:'1ère MEC NC', categorie_ce:'Catégorie CE',
+  carrosserie:'Carrosserie', puissance_administrative:'Puissance (CV)',
+  puissance_kw:'Puissance (kW)', ptac:'PTAC (kg)', poids_vide:'Poids vide (kg)',
+  charge_utile:'Charge utile (kg)', cylindree_cm3:'Cylindrée (cm³)',
+  nb_place_assis:'Nb places', bruit_dba:'Bruit (dBa)', couleur:'Couleur',
+  code_utilisation:'Utilisation', date_limite_validite_visite_technique:'Exp. CT',
+  numero_serie:'N° série', cnit:'CNIT', date_mise_a_jour:'Dernière MAJ'
+};
+const IMPORTANT = ['numero_immat','marque','appellation_commerciale','genre','energie','couleur',
+  'commune_proprietaire','date_emission','date_1ere_mise_en_circulation_nc',
+  'puissance_kw','puissance_administrative','cylindree_cm3','ptac','poids_vide',
+  'nb_place_assis','date_limite_validite_visite_technique','numero_serie','code_utilisation'];
+
+function showDetail(i) {
+  const r = window._rows[i];
+  document.getElementById('modalTitle').innerHTML =
+    `<span>${r.marque||'?'}</span> ${r.appellation_commerciale||''} <small style="font-size:12px;color:var(--muted);font-weight:400">${r.numero_immat||''}</small>`;
+  let html = '<div class="detail-grid">';
+  IMPORTANT.forEach(k => {
+    const v = r[k];
+    if (v===null||v===undefined||v==='') return;
+    html += `<div class="detail-item"><div class="key">${LABELS[k]||k}</div>
+      <div class="val ${['numero_immat','marque'].includes(k)?'hl':''}">${k==='energie'?energieBadge(v):v}</div></div>`;
+  });
+  html += '</div>';
+  document.getElementById('modalContent').innerHTML = html;
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); }
+document.addEventListener('keydown', e => { if(e.key==='Escape') closeModal(); });
+
+// ── Export CSV ────────────────────────────────────────────────────────────────
+function exportCSV() {
+  const rows = window._rows || [];
+  if (!rows.length) return;
+  const keys = Object.keys(rows[0]);
+  const csv = [keys.join(';'), ...rows.map(r => keys.map(k => JSON.stringify(r[k]??'')).join(';'))].join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8;'}));
+  a.download = 'vehicules_nc.csv'; a.click();
+}
+
+// ── Enter key ─────────────────────────────────────────────────────────────────
+document.querySelectorAll('input[type=text]').forEach(inp => {
+  inp.addEventListener('keydown', e => { if(e.key==='Enter') search(); });
+});
+</script>
+</body>
+</html>
