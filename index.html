@@ -330,33 +330,48 @@ function renderPagination() {
 
 const LABELS = {
   numero_immat:'N° immatriculation', marque:'Marque', appellation_commerciale:'Modèle',
-  genre:'Genre', genre_code:'Code genre', energie:'Énergie',
+  genre:'Genre', genre_code:'Code genre', energie:'Énergie', couleur:'Couleur',
+  carrosserie:'Carrosserie', categorie_ce:'Catégorie CE', type_nc:'Type NC',
   commune_proprietaire:'Commune propriétaire', type_societe_proprietaire:'Type société',
-  date_emission:'Date émission', date_1ere_mise_en_circulation:'1ère MEC',
-  date_1ere_mise_en_circulation_nc:'1ère MEC NC', categorie_ce:'Catégorie CE',
-  carrosserie:'Carrosserie', puissance_administrative:'Puissance (CV)',
-  puissance_kw:'Puissance (kW)', ptac:'PTAC (kg)', poids_vide:'Poids vide (kg)',
-  charge_utile:'Charge utile (kg)', cylindree_cm3:'Cylindrée (cm³)',
-  nb_place_assis:'Nb places', bruit_dba:'Bruit (dBa)', couleur:'Couleur',
-  code_utilisation:'Utilisation', date_limite_validite_visite_technique:'Exp. CT',
-  numero_serie:'N° série', cnit:'CNIT', date_mise_a_jour:'Dernière MAJ'
+  proprietaire_province:'Province propriétaire', commune_locataire:'Commune locataire',
+  type_societe_locataire:'Type société locataire', locataire_province:'Province locataire',
+  date_emission:'Date émission', date_1ere_mise_en_circulation:'1ère MEC (mondiale)',
+  date_1ere_mise_en_circulation_nc:'1ère MEC NC', date_mise_a_jour:'Dernière MAJ',
+  date_limite_validite_visite_technique:'Exp. contrôle technique',
+  date_retrait:'Date retrait', date_destruction:'Date destruction', date_exportation:'Date exportation',
+  puissance_administrative:'Puissance (CV)', puissance_kw:'Puissance (kW)',
+  cylindree_cm3:'Cylindrée (cm³)', regime_moteur:'Régime moteur (tr/min)',
+  bruit_dba:'Bruit (dBa)', nb_place_assis:'Places assises',
+  poids_vide:'Poids vide (kg)', ptac:'PTAC (kg)', ptra:'PTRA (kg)',
+  ptra_te:'PTRA TE (kg)', ptac_te:'PTAC TE (kg)', charge_utile:'Charge utile (kg)',
+  code_utilisation:'Code utilisation', numero_serie:'N° série', cnit:'CNIT',
+  tvv:'TVV', date_heure_retrouve:'Date/heure retrouvé', date_heure_vol:'Date/heure vol'
 };
-const IMPORTANT = ['numero_immat','marque','appellation_commerciale','genre','energie','couleur',
-  'commune_proprietaire','date_emission','date_1ere_mise_en_circulation_nc',
-  'puissance_kw','puissance_administrative','cylindree_cm3','ptac','poids_vide',
-  'nb_place_assis','date_limite_validite_visite_technique','numero_serie','code_utilisation'];
+
+const SECTIONS = [
+  { title: '🚗 Identification', keys: ['numero_immat','marque','appellation_commerciale','genre','genre_code','categorie_ce','type_nc','carrosserie','couleur','energie'] },
+  { title: '👤 Propriétaire', keys: ['commune_proprietaire','type_societe_proprietaire','proprietaire_province','commune_locataire','type_societe_locataire','locataire_province'] },
+  { title: '📅 Dates', keys: ['date_emission','date_1ere_mise_en_circulation','date_1ere_mise_en_circulation_nc','date_limite_validite_visite_technique','date_mise_a_jour','date_retrait','date_destruction','date_exportation','date_heure_vol','date_heure_retrouve'] },
+  { title: '⚙️ Caractéristiques techniques', keys: ['puissance_administrative','puissance_kw','cylindree_cm3','regime_moteur','bruit_dba','nb_place_assis','poids_vide','ptac','ptra','ptac_te','ptra_te','charge_utile'] },
+  { title: '📋 Divers', keys: ['code_utilisation','numero_serie','cnit','tvv'] },
+];
 
 function showDetail(i) {
   const r = window._rows[i];
   document.getElementById('modalTitle').innerHTML =
     `<span>${r.marque||'?'}</span> ${r.appellation_commerciale||''} <small style="font-size:12px;color:var(--muted);font-weight:400">${r.numero_immat||''}</small>`;
-  let html = '<div class="detail-grid">';
-  IMPORTANT.forEach(k => {
-    const v = r[k];
-    if(v===null||v===undefined||v==='') return;
-    html+=`<div class="detail-item"><div class="key">${LABELS[k]||k}</div><div class="val ${['numero_immat','marque'].includes(k)?'hl':''}">${k==='energie'?energieBadge(v):v}</div></div>`;
+  let html = '';
+  SECTIONS.forEach(sec => {
+    const items = sec.keys.filter(k => r[k]!==null && r[k]!==undefined && r[k]!=='');
+    if (!items.length) return;
+    html += `<div style="font-family:var(--mono);font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:0.1em;margin:16px 0 8px;padding-bottom:4px;border-bottom:1px solid var(--border)">${sec.title}</div>`;
+    html += '<div class="detail-grid">';
+    items.forEach(k => {
+      const v = r[k];
+      html+=`<div class="detail-item"><div class="key">${LABELS[k]||k}</div><div class="val ${['numero_immat','marque'].includes(k)?'hl':''}">${k==='energie'?energieBadge(v):v}</div></div>`;
+    });
+    html += '</div>';
   });
-  html+='</div>';
   document.getElementById('modalContent').innerHTML=html;
   document.getElementById('modalOverlay').classList.add('open');
 }
