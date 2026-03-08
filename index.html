@@ -149,11 +149,11 @@
           </div>
           <div class="field"><label>Couleur</label><input type="text" id="f_couleur" placeholder="ex: NOIR, BLANC…" autocomplete="off"/></div>
           <div class="field">
-            <label>Date d'émission — du</label>
+            <label>1ère MEC NC — du</label>
             <input type="date" id="f_date_debut" autocomplete="off"/>
           </div>
           <div class="field">
-            <label>Date d'émission — au</label>
+            <label>1ère MEC NC — au</label>
             <input type="date" id="f_date_fin" autocomplete="off"/>
           </div>
           <hr class="sep">
@@ -234,7 +234,7 @@ function buildUrl(offset) {
     while (cur <= d2) {
       const y = cur.getFullYear();
       const m = String(cur.getMonth()+1).padStart(2,'0');
-      months.push(`date_emission like "${y}-${m}%"`);
+      months.push(`date_1ere_mise_en_circulation_nc like "${y}-${m}%"`);
       cur.setMonth(cur.getMonth()+1);
     }
     if (months.length === 1) clauses.push(months[0]);
@@ -242,11 +242,11 @@ function buildUrl(offset) {
   } else if (date_debut) {
     const d = new Date(date_debut);
     const y = d.getFullYear(), m = String(d.getMonth()+1).padStart(2,'0');
-    clauses.push(`date_emission like "${y}-${m}%"`);
+    clauses.push(`date_1ere_mise_en_circulation_nc like "${y}-${m}%"`);
   } else if (date_fin) {
     const d = new Date(date_fin);
     const y = d.getFullYear(), m = String(d.getMonth()+1).padStart(2,'0');
-    clauses.push(`date_emission like "${y}-${m}%"`);
+    clauses.push(`date_1ere_mise_en_circulation_nc like "${y}-${m}%"`);
   }
 
   const where = clauses.join(' and ');
