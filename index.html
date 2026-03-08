@@ -303,10 +303,22 @@ function renderResults(results) {
   const cols  = ['numero_immat','marque','appellation_commerciale','genre','energie','commune_proprietaire','date_1ere_mise_en_circulation_nc','date_emission','puissance_administrative'];
   const heads = ['Immat.','Marque','Modèle','Genre','Énergie','Commune','1ère MEC NC','Date émission','CV'];
   const shown = currentOffset + results.length;
+  const sortableMap = { 'date_1ere_mise_en_circulation_nc': 'date_1ere_mise_en_circulation_nc', 'date_emission': 'date_emission', 'puissance_administrative': 'puissance_administrative', 'marque': 'marque' };
+  const currentSort = gval('f_orderby');
   let html = `<div class="results-header">
     <div class="results-meta">Résultats <strong>${currentOffset+1}–${shown}</strong> sur <strong>${currentTotal.toLocaleString('fr-FR')}</strong></div>
     <button class="btn-secondary" onclick="exportCSV()">↓ CSV</button>
-  </div><div class="table-wrap"><table><thead><tr>${heads.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>`;
+  </div><div class="table-wrap"><table><thead><tr>`;
+  cols.forEach((c,i) => {
+    const field = sortableMap[c];
+    if (field) {
+      const cls = currentSort === field+' asc' ? 'sortable sort-asc' : currentSort === field+' desc' ? 'sortable sort-desc' : 'sortable';
+      html += `<th class="${cls}" onclick="sortBy('${field}')">${heads[i]}</th>`;
+    } else {
+      html += `<th>${heads[i]}</th>`;
+    }
+  });
+  html += '</tr></thead><tbody>';
   results.forEach((r,i) => {
     html += `<tr onclick="showDetail(${i})">`;
     cols.forEach(c => {
