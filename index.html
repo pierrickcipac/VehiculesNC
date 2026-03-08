@@ -249,9 +249,8 @@ function buildUrl(offset) {
     clauses.push(`date_emission >= date"${annee}-01-01"`);
     clauses.push(`date_emission <= date"${annee}-12-31"`);
   } else if (mois) {
-    const y = new Date().getFullYear();
-    clauses.push(`date_emission >= date"${y}-${mois}-01"`);
-    clauses.push(`date_emission <= date"${y}-${mois}-31"`);
+    // Mois sans année : on ignore (l'API ne supporte pas le filtre mois seul)
+    // Un message sera affiché dans la validation
   }
 
   const where = clauses.join(' and ');
@@ -265,6 +264,12 @@ function showUrl(url) {
 }
 
 async function search(offset = 0) {
+  // Validation : mois sans année
+  const mois = gval('f_mois'), annee = gval('f_annee');
+  if (mois && !annee) {
+    document.getElementById('errorZone').innerHTML = '<div class="error-msg">⚠️ Veuillez sélectionner une année avec le mois.</div>';
+    return;
+  }
   currentOffset = offset;
   currentLimit  = parseInt(gval('f_limit'));
   const url = buildUrl(offset);
@@ -384,14 +389,4 @@ function exportCSV() {
   const now = new Date().getFullYear();
   for (let y = now; y >= 2000; y--) {
     const opt = document.createElement('option');
-    opt.value = y; opt.textContent = y;
-    sel.appendChild(opt);
-  }
-})();
-
-document.querySelectorAll('input[type=text]').forEach(inp => {
-  inp.addEventListener('keydown', e => { if(e.key==='Enter') search(); });
-});
-</script>
-</body>
-</html>
+    opt.valu
