@@ -243,15 +243,15 @@ function buildUrl(offset) {
   if (couleur) clauses.push(`couleur like "%${couleur}%"`);
   if (immat)   clauses.push(`(numero_immat="${immat}NC" OR numero_immat="${immat}")`);
   if (annee && mois) {
-    clauses.push(`date_emission >= "${annee}-${mois}-01"`);
-    clauses.push(`date_emission <= "${annee}-${mois}-31"`);
+    clauses.push(`date_emission >= date"${annee}-${mois}-01"`);
+    clauses.push(`date_emission <= date"${annee}-${mois}-31"`);
   } else if (annee) {
-    clauses.push(`date_emission >= "${annee}-01-01"`);
-    clauses.push(`date_emission <= "${annee}-12-31"`);
+    clauses.push(`date_emission >= date"${annee}-01-01"`);
+    clauses.push(`date_emission <= date"${annee}-12-31"`);
   } else if (mois) {
     const y = new Date().getFullYear();
-    clauses.push(`date_emission >= "${y}-${mois}-01"`);
-    clauses.push(`date_emission <= "${y}-${mois}-31"`);
+    clauses.push(`date_emission >= date"${y}-${mois}-01"`);
+    clauses.push(`date_emission <= date"${y}-${mois}-31"`);
   }
 
   const where = clauses.join(' and ');
