@@ -58,6 +58,10 @@
   .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 8px; }
   table { width: 100%; border-collapse: collapse; font-size: 12px; font-family: var(--mono); }
   thead th { padding: 10px 14px; text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); background: var(--surface); border-bottom: 1px solid var(--border); white-space: nowrap; }
+  thead th.sortable { cursor: pointer; user-select: none; }
+  thead th.sortable:hover { color: var(--accent); }
+  thead th.sort-asc::after { content: ' ↑'; color: var(--accent); }
+  thead th.sort-desc::after { content: ' ↓'; color: var(--accent); }
   tbody tr { border-bottom: 1px solid rgba(35,40,52,0.6); transition: background 0.1s; }
   tbody tr:hover { background: rgba(0,229,255,0.04); cursor: pointer; }
   td { padding: 9px 14px; white-space: nowrap; vertical-align: middle; }
@@ -296,8 +300,8 @@ function energieBadge(e) {
 function renderResults(results) {
   if (!results.length) { document.getElementById('resultsZone').innerHTML = '<div class="empty"><div class="icon">🚗</div>Aucun véhicule trouvé.</div>'; return; }
   window._rows = results;
-  const cols  = ['numero_immat','marque','appellation_commerciale','genre','energie','commune_proprietaire','date_1ere_mise_en_circulation_nc','date_emission','puissance_kw'];
-  const heads = ['Immat.','Marque','Modèle','Genre','Énergie','Commune','1ère MEC NC','Date émission','kW'];
+  const cols  = ['numero_immat','marque','appellation_commerciale','genre','energie','commune_proprietaire','date_1ere_mise_en_circulation_nc','date_emission','puissance_administrative'];
+  const heads = ['Immat.','Marque','Modèle','Genre','Énergie','Commune','1ère MEC NC','Date émission','CV'];
   const shown = currentOffset + results.length;
   let html = `<div class="results-header">
     <div class="results-meta">Résultats <strong>${currentOffset+1}–${shown}</strong> sur <strong>${currentTotal.toLocaleString('fr-FR')}</strong></div>
@@ -308,13 +312,20 @@ function renderResults(results) {
     cols.forEach(c => {
       if      (c==='energie')       html += `<td>${energieBadge(r[c])}</td>`;
       else if (c==='date_emission' || c==='date_1ere_mise_en_circulation_nc') html += `<td class="muted">${(r[c]||'').slice(0,10)||'—'}</td>`;
-      else if (c==='puissance_kw')  html += `<td class="muted">${r[c]!=null?r[c]+' kW':'—'}</td>`;
+      else if (c==='puissance_administrative') html += `<td class="muted">${r[c]!=null?r[c]+' CV':'—'}</td>`;
       else html += `<td>${r[c]||'<span style="color:var(--muted)">—</span>'}</td>`;
     });
     html += '</tr>';
   });
   html += '</tbody></table></div>';
   document.getElementById('resultsZone').innerHTML = html;
+}
+
+function sortBy(field) {
+  const current = gval('f_orderby');
+  const newSort = current === field+' desc' ? field+' asc' : field+' desc';
+  document.getElementById('f_orderby').value = newSort;
+  search(0);
 }
 
 function renderPagination() {
