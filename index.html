@@ -227,8 +227,27 @@ function buildUrl(offset) {
   if (energie) clauses.push(`energie="${energie}"`);
   if (couleur) clauses.push(`couleur like "%${couleur}%"`);
   if (immat)   clauses.push(`(numero_immat="${immat}NC" OR numero_immat="${immat}")`);
-  if (date_debut) clauses.push(`date_emission >= #${date_debut}T00:00:00#`);
-  if (date_fin)   clauses.push(`date_emission <= #${date_fin}T23:59:59#`);
+  if (date_debut && date_fin) {
+    const d1 = new Date(date_debut), d2 = new Date(date_fin);
+    const months = [];
+    let cur = new Date(d1.getFullYear(), d1.getMonth(), 1);
+    while (cur <= d2) {
+      const y = cur.getFullYear();
+      const m = String(cur.getMonth()+1).padStart(2,'0');
+      months.push(`date_emission like "${y}-${m}%"`);
+      cur.setMonth(cur.getMonth()+1);
+    }
+    if (months.length === 1) clauses.push(months[0]);
+    else clauses.push('(' + months.join(' OR ') + ')');
+  } else if (date_debut) {
+    const d = new Date(date_debut);
+    const y = d.getFullYear(), m = String(d.getMonth()+1).padStart(2,'0');
+    clauses.push(`date_emission like "${y}-${m}%"`);
+  } else if (date_fin) {
+    const d = new Date(date_fin);
+    const y = d.getFullYear(), m = String(d.getMonth()+1).padStart(2,'0');
+    clauses.push(`date_emission like "${y}-${m}%"`);
+  }
 
   const where = clauses.join(' and ');
   const parts = [`limit=${limit}`, `offset=${offset}`, `order_by=${encodeURIComponent(orderby)}`];
