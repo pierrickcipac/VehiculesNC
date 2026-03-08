@@ -149,27 +149,12 @@
           </div>
           <div class="field"><label>Couleur</label><input type="text" id="f_couleur" placeholder="ex: NOIR, BLANC…" autocomplete="off"/></div>
           <div class="field">
-            <label>Période d'émission</label>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-              <select id="f_mois">
-                <option value="">— Mois —</option>
-                <option value="01">Janvier</option>
-                <option value="02">Février</option>
-                <option value="03">Mars</option>
-                <option value="04">Avril</option>
-                <option value="05">Mai</option>
-                <option value="06">Juin</option>
-                <option value="07">Juillet</option>
-                <option value="08">Août</option>
-                <option value="09">Septembre</option>
-                <option value="10">Octobre</option>
-                <option value="11">Novembre</option>
-                <option value="12">Décembre</option>
-              </select>
-              <select id="f_annee">
-                <option value="">— Année —</option>
-              </select>
-            </div>
+            <label>Date d'émission — du</label>
+            <input type="date" id="f_date_debut" autocomplete="off"/>
+          </div>
+          <div class="field">
+            <label>Date d'émission — au</label>
+            <input type="date" id="f_date_fin" autocomplete="off"/>
           </div>
           <hr class="sep">
           <div class="field">
@@ -231,8 +216,8 @@ function buildUrl(offset) {
   const energie = gval('f_energie');
   const couleur = gval('f_couleur').toUpperCase();
   const immat   = gval('f_immat').toUpperCase().replace(/\s*NC\s*$/, '').trim();
-  const mois    = gval('f_mois');
-  const annee   = gval('f_annee');
+  const date_debut = gval('f_date_debut');
+  const date_fin   = gval('f_date_fin');
 
   const clauses = [];
   if (marque)  clauses.push(`marque like "%${marque}%"`);
@@ -242,16 +227,8 @@ function buildUrl(offset) {
   if (energie) clauses.push(`energie="${energie}"`);
   if (couleur) clauses.push(`couleur like "%${couleur}%"`);
   if (immat)   clauses.push(`(numero_immat="${immat}NC" OR numero_immat="${immat}")`);
-  if (annee && mois) {
-    clauses.push(`date_emission >= date"${annee}-${mois}-01"`);
-    clauses.push(`date_emission <= date"${annee}-${mois}-31"`);
-  } else if (annee) {
-    clauses.push(`date_emission >= date"${annee}-01-01"`);
-    clauses.push(`date_emission <= date"${annee}-12-31"`);
-  } else if (mois) {
-    // Mois sans année : on ignore (l'API ne supporte pas le filtre mois seul)
-    // Un message sera affiché dans la validation
-  }
+  if (date_debut) clauses.push(`date_emission >= date"${date_debut}"`);
+  if (date_fin)   clauses.push(`date_emission <= date"${date_fin}"`);
 
   const where = clauses.join(' and ');
   const parts = [`limit=${limit}`, `offset=${offset}`, `order_by=${encodeURIComponent(orderby)}`];
@@ -264,12 +241,7 @@ function showUrl(url) {
 }
 
 async function search(offset = 0) {
-  // Validation : mois sans année
-  const mois = gval('f_mois'), annee = gval('f_annee');
-  if (mois && !annee) {
-    document.getElementById('errorZone').innerHTML = '<div class="error-msg">⚠️ Veuillez sélectionner une année avec le mois.</div>';
-    return;
-  }
+
   currentOffset = offset;
   currentLimit  = parseInt(gval('f_limit'));
   const url = buildUrl(offset);
@@ -383,10 +355,9 @@ function exportCSV() {
   a.download='vehicules_nc.csv'; a.click();
 }
 
-// ── Init années ─────────────────────────────────────────────────────────────
-(function() {
-  const sel = document.getElementById('f_annee');
-  const now = new Date().getFullYear();
-  for (let y = now; y >= 2000; y--) {
-    const opt = document.createElement('option');
-    opt.valu
+document.querySelectorAll('input[type=text]').forEach(inp => {
+  inp.addEventListener('keydown', e => { if(e.key==='Enter') search(); });
+});
+</script>
+</body>
+</html>
