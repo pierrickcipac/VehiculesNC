@@ -107,12 +107,17 @@
     .panel-body { padding: 12px; }
     header { padding: 16px 0; margin-bottom: 20px; }
     h1 { font-size: 20px; }
+    .filters-toggle { display: flex !important; }
+    .filters-collapsible { display: none; }
+    .filters-collapsible.open { display: block; }
   }
   @media (max-width: 600px) {
     .container { padding: 0 12px; }
     h1 { font-size: 17px; }
     .stat-badge { font-size: 10px; padding: 4px 10px; }
   }
+  .filters-toggle { display: none; width: 100%; padding: 10px 18px; background: var(--surface2); border: none; border-top: 1px solid var(--border); color: var(--accent); font-family: var(--mono); font-size: 12px; text-align: left; cursor: pointer; align-items: center; justify-content: space-between; }
+  .filters-toggle:hover { background: rgba(0,229,255,0.05); }
   /* Tableau : toujours scrollable horizontalement */
   .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
   .table-wrap table { min-width: 900px; }
@@ -132,8 +137,11 @@
   <div class="layout">
     <aside>
       <div class="panel">
-        <div class="panel-header">Filtres</div>
-        <div class="panel-body">
+        <div class="panel-header" style="justify-content:space-between">
+          Filtres
+          <button class="filters-toggle" id="filtersToggle" onclick="toggleFilters()" style="display:none;background:none;border:none;color:var(--accent);font-family:var(--mono);font-size:11px;cursor:pointer;padding:0">▼ Afficher</button>
+        </div>
+        <div class="panel-body filters-collapsible" id="filtersBody">
           <div class="field"><label>Marque</label><input type="text" id="f_marque" placeholder="ex: TOYOTA, RENAULT…" autocomplete="off"/></div>
           <div class="field"><label>Modèle</label><input type="text" id="f_modele" placeholder="ex: YARIS, CLIO…" autocomplete="off"/></div>
           <div class="field"><label>Commune du propriétaire</label><input type="text" id="f_commune" placeholder="ex: NOUMEA, DUMBEA…" autocomplete="off"/></div>
@@ -222,6 +230,21 @@ function toggleChip(el, fieldId) {
   document.querySelectorAll('.chips .chip').forEach(c => c.classList.remove('active'));
   document.getElementById(fieldId).value = active ? '' : el.dataset.val;
   if (!active) el.classList.add('active');
+}
+
+function toggleFilters() {
+  const body = document.getElementById('filtersBody');
+  const btn = document.getElementById('filtersToggle');
+  const open = body.classList.toggle('open');
+  btn.textContent = open ? '▲ Masquer' : '▼ Afficher';
+}
+
+// Sur mobile, afficher le bouton toggle et fermer les filtres par défaut
+if (window.innerWidth <= 900) {
+  document.addEventListener('DOMContentLoaded', () => {
+    const btn = document.getElementById('filtersToggle');
+    if (btn) btn.style.display = 'inline-block';
+  });
 }
 
 function gval(id) { return document.getElementById(id).value.trim(); }
