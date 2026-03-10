@@ -173,7 +173,25 @@
             <label>N° immatriculation <small style="color:var(--muted);font-size:9px;text-transform:none">(sans "NC")</small></label>
             <input type="text" id="f_immat" placeholder="ex: 452017 ou 503 AR" autocomplete="off"/>
           </div>
-          <div class="field"><label>Couleur</label><input type="text" id="f_couleur" placeholder="ex: NOIR, BLANC…" autocomplete="off"/></div>
+          <div class="field">
+            <label>Catégorie CE</label>
+            <select id="f_categorie">
+              <option value="">— Toutes —</option>
+              <option value="M1">M1 — Voiture particulière</option>
+              <option value="M2">M2 — Minibus ≤5t</option>
+              <option value="M3">M3 — Bus >5t</option>
+              <option value="N1">N1 — Camionnette ≤3,5t</option>
+              <option value="N2">N2 — Camion 3,5-12t</option>
+              <option value="N3">N3 — Camion >12t</option>
+              <option value="O1">O1 — Remorque ≤0,75t</option>
+              <option value="O2">O2 — Remorque 0,75-3,5t</option>
+              <option value="O3">O3 — Remorque 3,5-10t</option>
+              <option value="O4">O4 — Remorque >10t</option>
+              <option value="L1e">L1e — Cyclomoteur 2 roues</option>
+              <option value="L3e">L3e — Moto</option>
+              <option value="T">T — Tracteur agricole</option>
+            </select>
+          </div>
           <div class="field">
             <label>Date d'émission — du</label>
             <input type="date" id="f_date_debut" autocomplete="off"/>
@@ -257,7 +275,6 @@ function buildUrl(offset) {
   const commune = gval('f_commune').toUpperCase();
   const genre   = gval('f_genre');
   const energie = gval('f_energie');
-  const couleur = gval('f_couleur').toUpperCase();
   const immat   = gval('f_immat').toUpperCase().replace(/\s*NC\s*$/, '').trim();
   const date_debut = gval('f_date_debut');
   const date_fin   = gval('f_date_fin');
@@ -268,8 +285,9 @@ function buildUrl(offset) {
   if (commune) clauses.push(`commune_proprietaire like "%${commune}%"`);
   if (genre)   clauses.push(`genre_code="${genre}"`);
   if (energie) clauses.push(`energie="${energie}"`);
-  if (couleur) clauses.push(`couleur like "%${couleur}%"`);
   if (immat)   clauses.push(`(numero_immat="${immat}NC" OR numero_immat="${immat}")`);
+  const categorie = gval('f_categorie');
+  if (categorie) clauses.push(`categorie_ce="${categorie}"`);
   if (date_debut && date_fin) {
     const d1 = new Date(date_debut), d2 = new Date(date_fin);
     const months = [];
