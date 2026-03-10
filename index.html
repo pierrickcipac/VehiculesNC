@@ -18,7 +18,7 @@
     background-image: linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px);
     background-size: 40px 40px; pointer-events: none; z-index: 0;
   }
-  .container { position: relative; z-index: 1; max-width: 1300px; margin: 0 auto; padding: 0 24px; }
+  .container { position: relative; z-index: 1; width: 100%; padding: 0 12px; }
   header { border-bottom: 1px solid var(--border); padding: 28px 0; margin-bottom: 36px; }
   .header-inner { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
   .logo-tag { font-family: var(--mono); font-size: 10px; color: var(--accent); background: rgba(0,229,255,0.08); border: 1px solid rgba(0,229,255,0.2); padding: 3px 8px; border-radius: 3px; letter-spacing: 0.1em; text-transform: uppercase; }
@@ -26,7 +26,7 @@
   h1 span { color: var(--accent); }
   .stat-badge { font-family: var(--mono); font-size: 11px; color: var(--muted); border: 1px solid var(--border); padding: 6px 14px; border-radius: 4px; }
   .stat-badge strong { color: var(--accent2); }
-  .layout { display: grid; grid-template-columns: 320px 1fr; gap: 24px; align-items: start; }
+  .layout { display: grid; grid-template-columns: 280px 1fr; gap: 16px; align-items: start; }
   .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
   .panel-header { padding: 14px 18px; border-bottom: 1px solid var(--border); font-size: 11px; font-family: var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: 0.12em; display: flex; align-items: center; gap: 8px; }
   .panel-header::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 8px var(--accent); }
@@ -108,14 +108,15 @@
     header { padding: 16px 0; margin-bottom: 20px; }
     h1 { font-size: 20px; }
     .filters-toggle { display: flex !important; }
-    .filters-collapsible { display: none; }
-    .filters-collapsible.open { display: block; }
+    .filters-collapsible { display: none !important; }
+    .filters-collapsible.open { display: block !important; }
   }
   @media (max-width: 600px) {
     .container { padding: 0 12px; }
     h1 { font-size: 17px; }
     .stat-badge { font-size: 10px; padding: 4px 10px; }
   }
+  .filters-collapsible { display: block; }
   .filters-toggle { display: none; width: 100%; padding: 10px 18px; background: var(--surface2); border: none; border-top: 1px solid var(--border); color: var(--accent); font-family: var(--mono); font-size: 12px; text-align: left; cursor: pointer; align-items: center; justify-content: space-between; }
   .filters-toggle:hover { background: rgba(0,229,255,0.05); }
   /* Tableau : toujours scrollable horizontalement */
