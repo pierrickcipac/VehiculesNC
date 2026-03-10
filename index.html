@@ -300,8 +300,8 @@ function energieBadge(e) {
 function renderResults(results) {
   if (!results.length) { document.getElementById('resultsZone').innerHTML = '<div class="empty"><div class="icon">🚗</div>Aucun véhicule trouvé.</div>'; return; }
   window._rows = results;
-  const cols  = ['numero_immat','marque','appellation_commerciale','genre','energie','commune_proprietaire','date_1ere_mise_en_circulation_nc','date_emission','puissance_administrative'];
-  const heads = ['Immat.','Marque','Modèle','Genre','Énergie','Commune','1ère MEC NC','Date émission','CV'];
+  const cols  = ['numero_immat','marque','appellation_commerciale','genre','energie','commune_proprietaire','date_1ere_mise_en_circulation_nc','date_emission','puissance_administrative','ptac','ptra'];
+  const heads = ['Immat.','Marque','Modèle','Genre','Énergie','Commune','1ère MEC NC','Date émission','CV','PTAC (kg)','PTRA (kg)'];
   const shown = currentOffset + results.length;
   const sortableMap = { 'date_1ere_mise_en_circulation_nc': 'date_1ere_mise_en_circulation_nc', 'date_emission': 'date_emission', 'puissance_administrative': 'puissance_administrative', 'marque': 'marque' };
   const currentSort = gval('f_orderby');
@@ -325,6 +325,7 @@ function renderResults(results) {
       if      (c==='energie')       html += `<td>${energieBadge(r[c])}</td>`;
       else if (c==='date_emission' || c==='date_1ere_mise_en_circulation_nc') html += `<td class="muted">${(r[c]||'').slice(0,10)||'—'}</td>`;
       else if (c==='puissance_administrative') html += `<td class="muted">${r[c]!=null?r[c]+' CV':'—'}</td>`;
+      else if (c==='ptac' || c==='ptra') html += `<td class="muted">${r[c]!=null?r[c]+' kg':'—'}</td>`;
       else html += `<td>${r[c]||'<span style="color:var(--muted)">—</span>'}</td>`;
     });
     html += '</tr>';
